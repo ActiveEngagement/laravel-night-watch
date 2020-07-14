@@ -2,6 +2,7 @@
     "name": "actengage/night-watch",
     "description": "The official Laravel package for the NightWatch service.",
     "type": "library",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Justin Kimbrell",
