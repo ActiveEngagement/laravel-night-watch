@@ -63,7 +63,7 @@ Watcher::create([
 
 ## Using the Watchable Trait
 
-You can easily related Watchers to your models.
+You can easily relate Watchers to your models.
 
 ``` php
 use Actengage\NightWatch\Support\Watchable;
@@ -83,6 +83,9 @@ class Url extends Model {
             $watcher = Watcher::create([
                 'url' => $model->url
             ]);
+
+            // This is a many to many relationship provided by the trait.
+            $model->watchers()->attach($watcher);
         });
     }
 }
