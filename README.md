@@ -1,6 +1,6 @@
 # NightWatch
 
-![PHP Composer](https://github.com/actengage/night-watch/workflows/PHP%20Composer/badge.svg)
+![PHP Composer](https://github.com/ActiveEngagement/laravel-night-watch/workflows/PHP%20Composer/badge.svg)
 
 **What is NightWatch?**
 
