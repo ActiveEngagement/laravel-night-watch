@@ -4,7 +4,7 @@
 
 **What is NightWatch?**
 
-Night Watch is a package watches URL's while you are away or sleeping. Night Watch uses a remote Node server to check the status of remote URL's. For example, NightWatch can heck for 404 URLs, or if a Google Tag Manager has been installed correctly.
+NightWatch is a package that watches URL's while you are away or sleeping. NightWatch uses a remote Node server to check the status of remote URL's. For example, NightWatch can heck for 404 URLs, or if a Google Tag Manager has been installed correctly.
 
 **What is included in this package?**
 
