@@ -44,9 +44,8 @@ class WatcherTest extends TestCase {
 
         // Test responses()
         $this->assertInstanceOf(HasMany::class, $watcher->responses());
-        $this->assertInstanceOf(HasOne::class, $watcher->lastResponse());
         $this->assertCount(0, $watcher->responses);
-        $this->assertNull($watcher->lastResponse);
+        $this->assertNull($watcher->lastResponse());
 
         $response = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
             'success' => true
@@ -56,7 +55,7 @@ class WatcherTest extends TestCase {
         $watcher->refresh();
 
         $this->assertCount(1, $watcher->responses);
-        $this->assertNotNull($watcher->lastResponse);
+        $this->assertNotNull($watcher->lastResponse());
     }
 
     public function testWatcherActiveStatus()

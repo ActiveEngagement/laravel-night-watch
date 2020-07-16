@@ -29,6 +29,7 @@ class Response extends Model {
      * @var string
      */
     protected $casts = [
+        'success' => 'bool',
         'response' => 'array'
     ];
 
@@ -51,7 +52,12 @@ class Response extends Model {
     {
         parent::boot();
 
-        parent::created(function($model) {
+        // Order by name ASC
+        static::addGlobalScope('order', function ($builder) {
+            $builder->orderBy('created_at', 'desc');
+        });
+
+        static::created(function($model) {
             if(!$model->success) {
                 BadResponse::dispatch($model);
             }
