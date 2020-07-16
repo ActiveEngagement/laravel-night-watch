@@ -68,7 +68,7 @@ Watcher::create([
 You can easily relate Watchers to your models.
 
 ``` php
-use Actengage\NightWatch\Support\Watchable;
+use Actengage\NightWatch\Watchable;
 use Actengage\NightWatch\Watcher;
 use Illuminate\Database\Eloquent\Model;
 

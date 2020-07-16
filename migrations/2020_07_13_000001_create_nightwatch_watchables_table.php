@@ -17,7 +17,7 @@ class CreateNightwatchWatchablesTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('watcher_id')->unsigned();
             $table->foreign('watcher_id')->references('id')->on('nightwatch_watchers')->onDelete('cascade')->onUpdate('cascade');
-            $table->morphs('nightwatch_watchable');
+            $table->morphs('watchable');
         });
     }
 

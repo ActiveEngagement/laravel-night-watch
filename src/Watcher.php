@@ -195,7 +195,17 @@ class Watcher extends Model {
      */
     public function responses()
     {
-        return $this->hasMany(Response::class);
+        return $this->hasMany(Response::class)->orderBy('id', 'desc');
+    }
+
+    /**
+     * The last responses assiociated with this watcher.
+     * 
+     * @return \Actengage\NightWatch\Response|null
+     */
+    public function lastResponse()
+    {
+        return $this->responses()->first();
     }
 
     /**
@@ -227,7 +237,7 @@ class Watcher extends Model {
      * Record a database response from a Guzzle response.
      * 
      * @param  \GuzzleHttp\Psr7\Response  $response
-     * @return static
+     * @return this
      */
     public function response(\GuzzleHttp\Psr7\Response $response)
     {
@@ -239,6 +249,18 @@ class Watcher extends Model {
             'success' => Arr::get($body, 'success'),
             'message' => Arr::get($body, 'message'),
         ]);
+    }
+
+    /**
+     * Run the watcher manually.
+     * 
+     * @return this
+     */
+    public function run()
+    {
+        RunWatcher::dispatch($this);
+
+        return true;
     }
 
     /**

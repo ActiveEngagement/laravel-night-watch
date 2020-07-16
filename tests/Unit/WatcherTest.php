@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Queue;
 
 class WatcherTest extends TestCase {
@@ -44,16 +45,17 @@ class WatcherTest extends TestCase {
         // Test responses()
         $this->assertInstanceOf(HasMany::class, $watcher->responses());
         $this->assertCount(0, $watcher->responses);
+        $this->assertNull($watcher->lastResponse());
 
         $response = new \GuzzleHttp\Psr7\Response(200, [], json_encode([
             'success' => true
         ]));
         
         $watcher->response($response);
-
-        $watcher->load('responses');
+        $watcher->refresh();
 
         $this->assertCount(1, $watcher->responses);
+        $this->assertNotNull($watcher->lastResponse());
     }
 
     public function testWatcherActiveStatus()
