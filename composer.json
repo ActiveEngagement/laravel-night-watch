@@ -31,11 +31,12 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Actengage\\NightWatch\\ServiceProvider"
+                "Actengage\\NightWatch\\NightWatchServiceProvider"
             ]
         }
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "phpunit": "phpunit"
     }
 }

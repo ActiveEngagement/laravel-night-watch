@@ -199,6 +199,16 @@ class Watcher extends Model {
     }
 
     /**
+     * The last responses assiociated with this watcher.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany;
+     */
+    public function lastResponse()
+    {
+        return $this->hasOne(Response::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Checks to see if the watcher is active.
      * 
      * @return bool
