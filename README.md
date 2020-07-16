@@ -18,7 +18,9 @@ This package has its own factories, migrations, models, and scheduling to make t
 
 ## Configure the ENV
 
-    NIGHT_WATCH_ENDPOINT='https://the.night.watch.url.goes.here'
+This is a private application currently, and thus the API endpoint is not included. Include the endpoint in your ENV file.
+
+    NIGHTWATCH_ENDPOINT_URI='https://the.night.watch.url.goes.here'
     
 ## Kernel Scheduling
 
