@@ -258,8 +258,20 @@ class Watcher extends Model {
      */
     public function run()
     {
-        RunWatcher::dispatch($this);
+        if($this->shouldRun()) {
+            RunWatcher::dispatch($this);
+        }
 
+        return true;
+    }
+
+    /**
+     * Should the wathcher run.
+     * 
+     * @return bool
+     */
+    public function shouldRun()
+    {
         return true;
     }
 
@@ -274,16 +286,18 @@ class Watcher extends Model {
         $schedule = $schedule ?: app(Schedule::class);
 
         return static::active()->each(function($model) use ($schedule) {
-            $event = $schedule->job(new RunWatcher($model));
-            
-            if(is_array($model->schedule)) {
-                foreach($model->schedule as $args) {
-                    if(!is_array($args)) {
-                        $args = [$args];
-                    }
+            if($model->shouldRun()) {
+                $event = $schedule->job(new RunWatcher($model));
+                
+                if(is_array($model->schedule)) {
+                    foreach($model->schedule as $args) {
+                        if(!is_array($args)) {
+                            $args = [$args];
+                        }
 
-                    if(count($method = array_splice($args, 0, 1))) {
-                        $event->{$method[0]}(...$args);
+                        if(count($method = array_splice($args, 0, 1))) {
+                            $event->{$method[0]}(...$args);
+                        }
                     }
                 }
             }

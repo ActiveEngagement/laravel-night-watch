@@ -29,6 +29,7 @@ class WatcherTest extends TestCase {
         // Test the calls attribute.
         $this->assertIsArray($watcher->calls);
         $this->assertCount(0, $watcher->calls);
+        $this->assertTrue($watcher->shouldRun());
 
         $watcher->calls = [['waitForSelector', ['.test', ['timeout' => 3000]]]];
 
