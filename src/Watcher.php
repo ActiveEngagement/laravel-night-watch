@@ -276,7 +276,7 @@ class Watcher extends Model {
         return static::active()->each(function($model) use ($schedule) {
             $event = $schedule->job(new RunWatcher($model));
             
-            if($model->schedule) {
+            if(is_array($model->schedule)) {
                 foreach($model->schedule as $args) {
                     if(!is_array($args)) {
                         $args = [$args];
