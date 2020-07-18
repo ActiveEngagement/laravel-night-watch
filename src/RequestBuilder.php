@@ -93,9 +93,7 @@ class RequestBuilder implements Arrayable {
     {
         $mergedConfig = array_merge((
             $this->client ? $this->client->getConfig() : []
-        ), [
-            'base_uri' => $this->baseUri(),
-        ], (
+        ), (
             is_array($config) ? $config : []
         ));
 
@@ -178,7 +176,7 @@ class RequestBuilder implements Arrayable {
      */
     public function send()
     {
-        $response = $this->client()->post('/', [
+        $response = $this->client()->post($this->baseUri(), [
             'json' => $this->toArray()
         ]);
 

@@ -20,7 +20,7 @@ class RequestBuilderTest extends TestCase {
         // Test baseUri()
         $this->assertNull($builder->baseUri());
 
-        config()->set('nightwatch.base_uri', $baseUri = 'https://test.com');
+        config()->set('nightwatch.base_uri', $baseUri = 'https://test.com/test');
 
         $this->assertEquals($baseUri, $builder->baseUri());
 
