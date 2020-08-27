@@ -3,6 +3,7 @@
 namespace Actengage\NightWatch;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Support\Arrayable;
 
 class RequestBuilder implements Arrayable {
@@ -176,9 +177,14 @@ class RequestBuilder implements Arrayable {
      */
     public function send()
     {
-        $response = $this->client()->post($this->baseUri(), [
-            'json' => $this->toArray()
-        ]);
+        try {
+            $response = $this->client()->post($this->baseUri(), [
+                'json' => $this->toArray()
+            ]);
+        }
+        catch(ClientException $e) {
+            $response = $e->getResponse();
+        }
 
         return $this->watcher->response($response);
     }
