@@ -178,7 +178,7 @@ class RequestBuilder implements Arrayable {
     public function send()
     {
         try {
-            $response = $this->client()->post($this->baseUri(), [
+            $response = $this->client()->post($this->baseUri() ?? '', [
                 'json' => $this->toArray()
             ]);
         }
