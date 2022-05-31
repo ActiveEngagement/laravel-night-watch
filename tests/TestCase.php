@@ -4,6 +4,8 @@ namespace Actengage\NightWatch\Tests;
 
 use Actengage\NightWatch\NightWatchServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
+use Illuminate\Support\Facades\Event;
+use Actengage\NightWatch\Events\BadResponse;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -44,6 +46,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'api_key' => 'API_KEY',
             'account_id' => 'ACCOUNT_ID',
             'campaign_id' => 'CAMPAIGN_ID'
+        ]);
+    }
+
+    protected function fakeEvents()
+    {
+        Event::fake([
+          BadResponse::class
         ]);
     }
 }
