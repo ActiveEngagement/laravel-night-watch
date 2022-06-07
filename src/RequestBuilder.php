@@ -178,7 +178,7 @@ class RequestBuilder implements Arrayable {
      */
     public function send()
     {
-        $this->watcher->update(['begins_at' => Carbon::now()]);
+        $this->watcher->update(['begins_at' => Carbon::now(), 'ends_at' => null]);
 
         try
         {
