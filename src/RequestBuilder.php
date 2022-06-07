@@ -179,14 +179,18 @@ class RequestBuilder implements Arrayable {
     public function send()
     {
         $this->watcher->update(['begins_at' => Carbon::now()]);
-        try {
+
+        try
+        {
             $response = $this->client()->post($this->baseUri() ?? '', [
                 'json' => $this->toArray()
             ]);
-            $this->watcher->update(['ends_at' => Carbon::now()]);
-        }
-        catch(ClientException $e) {
+        } catch(ClientException $e)
+        {
             $response = $e->getResponse();
+        } finally
+        {
+            $this->watcher->update(['ends_at' => Carbon::now()]);
         }
 
         return $this->watcher->response($response);
