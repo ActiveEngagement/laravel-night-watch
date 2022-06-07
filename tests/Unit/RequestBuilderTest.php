@@ -5,12 +5,13 @@ namespace Actengage\NightWatch\Tests\Unit;
 use Actengage\NightWatch\RequestBuilder;
 use Actengage\NightWatch\Tests\TestCase;
 use Actengage\NightWatch\Watcher;
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 
 class RequestBuilderTest extends TestCase {
-
     public function testBuildingRequest()
     {
         $watcher = factory(Watcher::class)->create();
@@ -66,4 +67,26 @@ class RequestBuilderTest extends TestCase {
         $this->assertEquals(200, $response->status_code);
     }
 
+    public function test__send__setsBeginsAtAndEndsAt() {
+        $watcher = factory(Watcher::class)->create();
+        $builder = new RequestBuilder($watcher);
+        $handler = new MockHandler([
+            new Response(200, [], json_encode([
+                'success' => true
+            ]))
+        ]);
+        $builder->client([
+            'handler' => $handler,
+            'delay' => 2500
+        ]);
+        $began = Carbon::now();
+        $builder->send();
+        $ended = Carbon::now();
+
+        $this->assertNotNull($watcher->begins_at);
+        $this->assertNotNull($watcher->ends_at);
+
+        $this->assertCarbonsEqualWithDelta($began, $watcher->begins_at, CarbonInterval::second(1));
+        $this->assertCarbonsEqualWithDelta($ended, $watcher->ends_at, CarbonInterval::second(1));
+    }
 }
