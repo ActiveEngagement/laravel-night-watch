@@ -60,65 +60,6 @@ class WatcherTest extends TestCase {
         $this->assertNotNull($watcher->lastResponse());
     }
 
-    public function testWatcherActiveStatus()
-    {
-        $watcher = factory(Watcher::class)->create();
-
-        $this->assertTrue($watcher->isActive());
-
-        $watcher->begins_at = now()->addMinute(1);
-
-        $this->assertFalse($watcher->isActive());
-
-        $watcher->begins_at = now()->subMinute(1);
-
-        $this->assertTrue($watcher->isActive());
-
-        $watcher->ends_at = now()->subMinute(1);
-
-        $this->assertFalse($watcher->isActive());
-
-        $watcher->ends_at = now()->addMinute(1);
-
-        $this->assertTrue($watcher->isActive());
-    }
-
-    public function testWatcherScopes()
-    {
-        // Active
-        factory(Watcher::class)->create();
-
-        factory(Watcher::class)->create([
-            'begins_at' => now()
-        ]);
-
-        factory(Watcher::class)->create([
-            'ends_at' => now()
-        ]);
-
-        factory(Watcher::class)->create([
-            'begins_at' => now(),
-            'ends_at' => now()
-        ]);
-
-        // Inactive
-        factory(Watcher::class)->create([
-            'begins_at' => now()->addSecond()
-        ]);
-
-        factory(Watcher::class)->create([
-            'ends_at' => now()->subSecond()
-        ]);
-
-        factory(Watcher::class)->create([
-            'begins_at' => now()->subSeconds(2),
-            'ends_at' => now()->subSecond()
-        ]);
-
-        $this->assertCount(4, Watcher::active()->get());
-        $this->assertCount(3, Watcher::inactive()->get());
-    }
-
     public function testWatcherRequest()
     {
         $watcher = factory(Watcher::class)->create($body = [
