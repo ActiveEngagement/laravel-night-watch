@@ -8,6 +8,7 @@ use Actengage\NightWatch\RequestBuilder;
 use Actengage\NightWatch\Response;
 use Actengage\NightWatch\Tests\TestCase;
 use Actengage\NightWatch\Watcher;
+use Carbon\Carbon;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Console\Scheduling\Schedule;
@@ -189,5 +190,33 @@ class WatcherTest extends TestCase {
         $url->watchers()->sync($watcher);
         
         $this->assertCount(1, $url->watchers);
+    }
+
+    public function test__schedule__includesCurrentlyRunning() {
+        Queue::fake();
+
+        factory(Watcher::class)->create([
+            'begins_at' => Carbon::now()->subSecond()
+        ]);
+
+        Watcher::schedule();
+        $this->artisan('schedule:run');
+
+        Queue::assertPushed(RunWatcher::class);
+        $this->assertCount(1, app(Schedule::class)->events());
+    }
+
+    public function test__schedule__includesCurrentlyNotRunning() {
+        Queue::fake();
+
+        factory(Watcher::class)->create([
+            'begins_at' => Carbon::now()->addSecond()
+        ]);
+
+        Watcher::schedule();
+        $this->artisan('schedule:run');
+
+        Queue::assertPushed(RunWatcher::class);
+        $this->assertCount(1, app(Schedule::class)->events());
     }
 }

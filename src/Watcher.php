@@ -285,7 +285,7 @@ class Watcher extends Model {
     {
         $schedule = $schedule ?: app(Schedule::class);
 
-        return static::active()->each(function($model) use ($schedule) {
+        return static::all()->each(function($model) use ($schedule) {
             if($model->shouldRun()) {
                 $event = $schedule->job(new RunWatcher($model));
                 
