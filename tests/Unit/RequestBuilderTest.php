@@ -8,6 +8,7 @@ use Actengage\NightWatch\Watcher;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 
@@ -67,12 +68,16 @@ class RequestBuilderTest extends TestCase {
         $this->assertEquals(200, $response->status_code);
     }
 
-    public function test__send__setsBeginsAtAndEndsAt() {
+    /**
+     * @dataProvider data__send__setsBeginsAtAndEndsAt
+     */
+    public function test__send__setsBeginsAtAndEndsAt(int $status, bool $success) {
         $watcher = factory(Watcher::class)->create();
         $builder = new RequestBuilder($watcher);
-        $handler = new MockHandler([
-            new Response(200, [], json_encode([
-                'success' => true
+        // createWithMiddleware() is necessary in order to get Guzzle to raise client/server exceptions.
+        $handler = MockHandler::createWithMiddleware([
+            new Response($status, [], json_encode([
+                'success' => $success
             ]))
         ]);
         $builder->client([
@@ -80,7 +85,12 @@ class RequestBuilderTest extends TestCase {
             'delay' => 2500
         ]);
         $began = Carbon::now();
-        $builder->send();
+        try
+        {
+            $builder->send();
+        } catch (ServerException)
+        {
+        }
         $ended = Carbon::now();
 
         $this->assertNotNull($watcher->begins_at);
@@ -88,5 +98,13 @@ class RequestBuilderTest extends TestCase {
 
         $this->assertCarbonsEqualWithDelta($began, $watcher->begins_at, CarbonInterval::second(1));
         $this->assertCarbonsEqualWithDelta($ended, $watcher->ends_at, CarbonInterval::second(1));
+    }
+
+    public function data__send__setsBeginsAtAndEndsAt() {
+        return [
+            [200, true],
+            [400, false],
+            [500, false]
+        ];
     }
 }
