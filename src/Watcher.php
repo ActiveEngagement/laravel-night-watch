@@ -195,7 +195,7 @@ class Watcher extends Model {
     public function run()
     {
         if($this->shouldRun()) {
-            RunWatcher::dispatch($this);
+            App::make(RunWatcher::class, ['watcher' => $this])->dispatch();
         }
 
         return true;
