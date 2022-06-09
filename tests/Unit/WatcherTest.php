@@ -147,6 +147,10 @@ class WatcherTest extends TestCase {
         $this->assertCount(1, app(Schedule::class)->events());
     }
 
+    /**
+     * This test is for historical purposes, since previous versions attempted to prevent running watchers from
+     * executing.
+     */
     public function test__schedule__includesCurrentlyNotRunning() {
         Queue::fake();
 
