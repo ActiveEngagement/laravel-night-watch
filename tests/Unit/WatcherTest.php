@@ -160,4 +160,18 @@ class WatcherTest extends TestCase {
         Queue::assertPushed(RunWatcher::class);
         $this->assertCount(1, app(Schedule::class)->events());
     }
+
+    public function test__schedule__excludesInactive() {
+        Queue::fake();
+
+        factory(Watcher::class)->create([
+            'active' => false
+        ]);
+
+        Watcher::schedule();
+        $this->artisan('schedule:run');
+
+        Queue::assertNothingPushed();
+        $this->assertEmpty(app(Schedule::class)->events());
+    }
 }

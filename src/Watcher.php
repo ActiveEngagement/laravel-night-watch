@@ -107,6 +107,38 @@ class Watcher extends Model {
     }
 
     /**
+     * The "active" scope.
+     * 
+     * Gets a scope with all "active" watchers. Active watchers are simply those whose "active" column is truthy. This
+     * is different than in previous versions where an "active" watcher was one that was currently running.
+     * 
+     * Please note that a watcher's activation status is solely in relation to scheduling. An "inactive" watcher may of
+     * course still be run manually.
+     * 
+     * This scope is syntactic sugar for `->where('active', true)`.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
+
+    /**
+     * The "inactive" scope.
+     * 
+     * Gets a scope with all non-"active" watchers. Active watchers are simply those whose "active" column is truthy.
+     * This is different than in previous versions where an "active" watcher was one that was currently running.
+     * 
+     * Please note that a watcher's activation status is solely in relation to scheduling. An "inactive" watcher may of
+     * course still be run manually.
+     * 
+     * This scope is syntactic sugar for `->where('active', false)`.
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('active', false);
+    }
+
+    /**
      * The responses assiociated with this watcher.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany;
@@ -188,7 +220,7 @@ class Watcher extends Model {
     {
         $schedule = $schedule ?: app(Schedule::class);
 
-        return static::all()->each(function($model) use ($schedule) {
+        return static::active()->each(function($model) use ($schedule) {
             if($model->shouldRun()) {
                 $event = $schedule->job(new RunWatcher($model));
                 
