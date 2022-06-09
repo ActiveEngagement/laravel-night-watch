@@ -193,19 +193,22 @@ class Watcher extends Model {
      */
     public function run()
     {
-        if($this->shouldRun()) {
-            RunWatcher::dispatch($this);
-        }
+        RunWatcher::dispatch($this);
 
         return true;
     }
 
     /**
-     * Should the wathcher run.
+     * Called before the watcher is executed.
      * 
-     * @return bool
+     * This method is called by `RunWatcher` before this watcher is executed. By default, it does nothing. It may be
+     * overriden with app-specific functionality that should be run before watcher execution.
+     * 
+     * If this method returns false, the watcher will not be run.
+     * 
+     * @return bool whether to continue and execute the watcher.
      */
-    public function shouldRun()
+    public function beforeRun(): bool
     {
         return true;
     }
@@ -221,18 +224,16 @@ class Watcher extends Model {
         $schedule = $schedule ?: app(Schedule::class);
 
         return static::active()->each(function($model) use ($schedule) {
-            if($model->shouldRun()) {
-                $event = $schedule->job(new RunWatcher($model));
-                
-                if(is_array($model->schedule)) {
-                    foreach($model->schedule as $args) {
-                        if(!is_array($args)) {
-                            $args = [$args];
-                        }
+            $event = $schedule->job(new RunWatcher($model));
+            
+            if(is_array($model->schedule)) {
+                foreach($model->schedule as $args) {
+                    if(!is_array($args)) {
+                        $args = [$args];
+                    }
 
-                        if(count($method = array_splice($args, 0, 1))) {
-                            $event->{$method[0]}(...$args);
-                        }
+                    if(count($method = array_splice($args, 0, 1))) {
+                        $event->{$method[0]}(...$args);
                     }
                 }
             }

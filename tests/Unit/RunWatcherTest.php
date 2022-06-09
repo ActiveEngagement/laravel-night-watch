@@ -30,6 +30,7 @@ class RunWatcherTest extends TestCase {
         $builder = new RequestBuilder($mock);
 
         $mock->method('request')->willReturn($builder);
+        $mock->method('beforeRun')->willReturn(true);
         
         $builder->client([
             'handler' => $handler

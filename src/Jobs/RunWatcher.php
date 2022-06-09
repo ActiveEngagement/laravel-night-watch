@@ -33,6 +33,8 @@ class RunWatcher implements ShouldQueue
      */
     public function handle()
     {
-        $this->watcher->request()->send();
+        if ($this->watcher->beforeRun()) {
+            $this->watcher->request()->send();
+        }
     }
 }
