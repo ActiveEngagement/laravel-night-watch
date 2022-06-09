@@ -6,6 +6,7 @@ use Actengage\NightWatch\Jobs\RunWatcher;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 class Watcher extends Model {
 
@@ -222,7 +223,7 @@ class Watcher extends Model {
 
         return static::active()->each(function($model) use ($schedule) {
             if($model->shouldRun()) {
-                $event = $schedule->job(new RunWatcher($model));
+                $event = $schedule->job(App::make(RunWatcher::class, ['watcher' => $model]));
                 
                 if(is_array($model->schedule)) {
                     foreach($model->schedule as $args) {
