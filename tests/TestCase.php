@@ -6,10 +6,11 @@ use Actengage\NightWatch\NightWatchServiceProvider;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
 use Illuminate\Support\Facades\Event;
 use Actengage\NightWatch\Events\BadResponse;
+use Actengage\NightWatch\Tests\Assertions\AssertsCarbons;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
-    use WithLaravelMigrations;
+    use WithLaravelMigrations, AssertsCarbons;
     
     protected function setUp(): void
     {

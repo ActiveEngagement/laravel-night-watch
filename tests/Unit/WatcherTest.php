@@ -8,6 +8,7 @@ use Actengage\NightWatch\RequestBuilder;
 use Actengage\NightWatch\Response;
 use Actengage\NightWatch\Tests\TestCase;
 use Actengage\NightWatch\Watcher;
+use Carbon\Carbon;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Console\Scheduling\Schedule;
@@ -57,65 +58,6 @@ class WatcherTest extends TestCase {
 
         $this->assertCount(1, $watcher->responses);
         $this->assertNotNull($watcher->lastResponse());
-    }
-
-    public function testWatcherActiveStatus()
-    {
-        $watcher = factory(Watcher::class)->create();
-
-        $this->assertTrue($watcher->isActive());
-
-        $watcher->begins_at = now()->addMinute(1);
-
-        $this->assertFalse($watcher->isActive());
-
-        $watcher->begins_at = now()->subMinute(1);
-
-        $this->assertTrue($watcher->isActive());
-
-        $watcher->ends_at = now()->subMinute(1);
-
-        $this->assertFalse($watcher->isActive());
-
-        $watcher->ends_at = now()->addMinute(1);
-
-        $this->assertTrue($watcher->isActive());
-    }
-
-    public function testWatcherScopes()
-    {
-        // Active
-        factory(Watcher::class)->create();
-
-        factory(Watcher::class)->create([
-            'begins_at' => now()
-        ]);
-
-        factory(Watcher::class)->create([
-            'ends_at' => now()
-        ]);
-
-        factory(Watcher::class)->create([
-            'begins_at' => now(),
-            'ends_at' => now()
-        ]);
-
-        // Inactive
-        factory(Watcher::class)->create([
-            'begins_at' => now()->addSecond()
-        ]);
-
-        factory(Watcher::class)->create([
-            'ends_at' => now()->subSecond()
-        ]);
-
-        factory(Watcher::class)->create([
-            'begins_at' => now()->subSeconds(2),
-            'ends_at' => now()->subSecond()
-        ]);
-
-        $this->assertCount(4, Watcher::active()->get());
-        $this->assertCount(3, Watcher::inactive()->get());
     }
 
     public function testWatcherRequest()
@@ -189,5 +131,33 @@ class WatcherTest extends TestCase {
         $url->watchers()->sync($watcher);
         
         $this->assertCount(1, $url->watchers);
+    }
+
+    public function test__schedule__includesCurrentlyRunning() {
+        Queue::fake();
+
+        factory(Watcher::class)->create([
+            'begins_at' => Carbon::now()->subSecond()
+        ]);
+
+        Watcher::schedule();
+        $this->artisan('schedule:run');
+
+        Queue::assertPushed(RunWatcher::class);
+        $this->assertCount(1, app(Schedule::class)->events());
+    }
+
+    public function test__schedule__includesCurrentlyNotRunning() {
+        Queue::fake();
+
+        factory(Watcher::class)->create([
+            'begins_at' => Carbon::now()->addSecond()
+        ]);
+
+        Watcher::schedule();
+        $this->artisan('schedule:run');
+
+        Queue::assertPushed(RunWatcher::class);
+        $this->assertCount(1, app(Schedule::class)->events());
     }
 }

@@ -107,88 +107,6 @@ class Watcher extends Model {
     }
 
     /**
-     * Append the active scope.
-     * 
-     * @return void
-     */
-    public function scopeActive($query)
-    {
-        $query->hasBegun()->hasNotEnded();
-    }
-
-    /**
-     * Append the inactive scope.
-     * 
-     * @return void
-     */
-    public function scopeInactive($query)
-    {
-        $query->where(function($q) {
-            $q->orWhere(function($q) {
-                $q->hasNotBegun();
-            });
-        
-            $q->orWhere(function($q) {
-                $q->hasEnded();
-            });
-        });
-    }
-
-    /**
-     * Append the has begun scope.
-     * 
-     * @return void
-     */
-    public function scopeHasBegun($query)
-    {
-        $query->where(function($q) {
-            $q->whereNull('begins_at');
-            $q->orWhereNotNull('begins_at');
-            $q->where('begins_at', '<=', now());
-        });
-    }
-
-    /**
-     * Append the has not begun scope.
-     * 
-     * @return void
-     */
-    public function scopeHasNotBegun($query)
-    {
-        $query->where(function($q) {
-            $q->whereNotNull('begins_at');
-            $q->where('begins_at', '>', now());
-        });
-    }
-
-    /**
-     * Append the has ended scope.
-     * 
-     * @return void
-     */
-    public function scopeHasEnded($query)
-    {
-        $query->where(function($q) {
-            $q->whereNotNull('ends_at');
-            $q->where('ends_at', '<', now());
-        });
-    }
-
-    /**
-     * Append the has not ended scope.
-     * 
-     * @return void
-     */
-    public function scopeHasNotEnded($query)
-    {
-        $query->where(function($q) {
-            $q->whereNull('ends_at');
-            $q->orWhereNotNull('ends_at');
-            $q->where('ends_at', '>=', now());
-        });
-    }
-
-    /**
      * The responses assiociated with this watcher.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany;
@@ -206,21 +124,6 @@ class Watcher extends Model {
     public function lastResponse()
     {
         return $this->responses()->first();
-    }
-
-    /**
-     * Checks to see if the watcher is active.
-     * 
-     * @return bool
-     */
-    public function isActive()
-    {
-        if ($this->begins_at && $this->begins_at->isFuture() ||
-            $this->ends_at && $this->ends_at->isPast()) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -285,7 +188,7 @@ class Watcher extends Model {
     {
         $schedule = $schedule ?: app(Schedule::class);
 
-        return static::active()->each(function($model) use ($schedule) {
+        return static::all()->each(function($model) use ($schedule) {
             if($model->shouldRun()) {
                 $event = $schedule->job(new RunWatcher($model));
                 

@@ -2,6 +2,7 @@
 
 namespace Actengage\NightWatch;
 
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Contracts\Support\Arrayable;
@@ -177,13 +178,19 @@ class RequestBuilder implements Arrayable {
      */
     public function send()
     {
-        try {
+        $this->watcher->update(['begins_at' => Carbon::now(), 'ends_at' => null]);
+
+        try
+        {
             $response = $this->client()->post($this->baseUri() ?? '', [
                 'json' => $this->toArray()
             ]);
-        }
-        catch(ClientException $e) {
+        } catch(ClientException $e)
+        {
             $response = $e->getResponse();
+        } finally
+        {
+            $this->watcher->update(['ends_at' => Carbon::now()]);
         }
 
         return $this->watcher->response($response);
