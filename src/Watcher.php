@@ -22,7 +22,7 @@ class Watcher extends Model {
      * @var array
      */
     protected $fillable = [
-        'url', 'request', 'begins_at', 'ends_at'
+        'url', 'request', 'begins_at', 'ends_at', 'active'
     ];
 
     /**
