@@ -44,7 +44,7 @@ class Watcher extends Model {
      * @var string
      */
     protected $casts = [
-        'request' => 'array',
+        'request' => 'collection',
         'schedule' => 'array'
     ];
 
@@ -64,7 +64,7 @@ class Watcher extends Model {
      */
     public function getCallsAttribute()
     {
-        return Arr::get($this->request, 'calls', []);
+        return $this->request->get('calls', []);
     }
 
     /**
@@ -74,7 +74,7 @@ class Watcher extends Model {
      */
     public function setCallsAttribute(array $value)
     {
-        $this->request = array_merge([], $this->request, ['calls' => $value]);
+        $this->request = $this->request->merge(['calls' => $value]);
     }
 
     /**
@@ -84,7 +84,7 @@ class Watcher extends Model {
      */
     public function getListenAttribute()
     {
-        return Arr::get($this->request, 'listen', []);
+        return $this->request->get('listen', []);
     }
 
     /**
@@ -94,7 +94,7 @@ class Watcher extends Model {
      */
     public function setListenAttribute(array $value)
     {
-        $this->request = array_merge([], $this->request, ['listen' => $value]);
+        $this->request = $this->request->merge(['listen' => $value]);
     }
 
     /**
@@ -104,7 +104,7 @@ class Watcher extends Model {
      */
     public function setUrlAttribute(string $value = null)
     {
-        $this->request = array_merge([], $this->request, [
+        $this->request = $this->request->merge([
             'url' => $this->attributes['url'] = $value
         ]);
     }
