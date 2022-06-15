@@ -13,17 +13,16 @@ class RunWatcher implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $watcher;
-
     /**
-     * Create a new job instance.
+     * Create a new RunWatcher.
+     * 
+     * Creates a new {@see RunWatcher} for the given {@see Watcher}.
      *
      * @param  \Actengage\NightWatch\Watcher  $watcher
      * @return void
      */
-    public function __construct(Watcher $watcher)
+    public function __construct(protected Watcher $watcher)
     {
-        $this->watcher = $watcher;
     }
 
     /**
@@ -31,7 +30,7 @@ class RunWatcher implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if ($this->watcher->beforeRun()) {
             $this->watcher->request()->send();

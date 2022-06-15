@@ -12,45 +12,38 @@ class RequestBuilder implements Arrayable {
     /**
      * The calls attribute.
      * 
-     * @var array
+     * @var ?array
      */
-    protected $calls = [];
+    protected ?array $calls = [];
     
     /**
      * The global Guzzle client.
      * 
      * @var \GuzzleHttp\Client
      */
-    protected $client;
+    protected ?Client $client = null;
 
     /**
      * The listen attribute.
      * 
-     * @var array|null
+     * @var ?array
      */
-    protected $listen = null;
+    protected ?array $listen = null;
 
     /**
      * The url attribute.
      * 
-     * @var array|null
+     * @var ?string
      */
-    protected $url = null;
-
-    /**
-     * The request watcher.
-     * 
-     * @var \Actengage\NightWatch\Watcher
-     */
-    protected $watcher;
+    protected ?string $url = null;
 
     /**
      * Construct the RequestBulder.
      * 
-     * @param  \Actengage\NightWatch\Watcher  $watcher
+     * @param  \Actengage\NightWatch\Watcher  $watcher  the {@see Watcher} for which to build requests.
      * @return void
      */
-    public function __construct(Watcher $watcher)
+    public function __construct(protected Watcher $watcher)
     {
         $this->watcher = $watcher;
         $this->calls = $watcher->calls;
@@ -61,9 +54,9 @@ class RequestBuilder implements Arrayable {
     /**
      * Define the API base endpoint URI.
      * 
-     * @return string|null
+     * @return ?string
      */
-    public function baseUri()
+    public function baseUri(): ?string
     {
         return config('nightwatch.base_uri');
     }
@@ -71,10 +64,10 @@ class RequestBuilder implements Arrayable {
     /**
      * Get/set the calls attribute.
      * 
-     * @param  array|null  $calls
+     * @param  ?array  $calls
      * @return array|this
      */
-    public function calls(array $calls = null)
+    public function calls(?array $calls = null): array|static
     {
         if(is_null($calls)) {
             return $this->calls;
@@ -88,10 +81,10 @@ class RequestBuilder implements Arrayable {
     /**
      * Get the Guzzle client.
      * 
-     * @param  array  $client
+     * @param  ?array  $config
      * @return \GuzzleHttp\Client
      */
-    public function client($config = null): Client
+    public function client(?array $config = null): Client
     {
         $mergedConfig = array_merge((
             $this->client ? $this->client->getConfig() : []
@@ -109,10 +102,10 @@ class RequestBuilder implements Arrayable {
     /**
      * Get/set the listen attribute.
      * 
-     * @param  array|null  $listen
+     * @param  ?array  $listen
      * @return array|this
      */
-    public function listen(array $listen = null)
+    public function listen(?array $listen = null): array|static
     {
         if(is_null($listen)) {
             return $this->listen;
@@ -126,10 +119,10 @@ class RequestBuilder implements Arrayable {
     /**
      * Get/set the url attribute.
      * 
-     * @param  string|null  $url
+     * @param  ?string  $url
      * @return string|this
      */
-    public function url(string $url = null)
+    public function url(?string $url = null): string|static
     {
         if(is_null($url)) {
             return $this->url;
@@ -143,10 +136,10 @@ class RequestBuilder implements Arrayable {
     /**
      * Get/set the watcher attribute.
      * 
-     * @param  \Actengage\NightWatch\Watcher|null  $watcher
+     * @param  ?\Actengage\NightWatch\Watcher  $watcher
      * @return \Actengage\NightWatch\Watcher|this
      */
-    public function watcher(Watcher $watcher = null)
+    public function watcher(?Watcher $watcher = null): Watcher|static
     {
         if(is_null($watcher)) {
             return $this->watcher;
@@ -162,7 +155,7 @@ class RequestBuilder implements Arrayable {
      * 
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array_filter([
             'url' => $this->url,
@@ -176,7 +169,7 @@ class RequestBuilder implements Arrayable {
      * 
      * @return \Actengage\NightWatch\Response
      */
-    public function send()
+    public function send(): Response
     {
         $this->watcher->update(['begins_at' => Carbon::now(), 'ends_at' => null]);
 

@@ -3,6 +3,7 @@
 namespace Actengage\NightWatch;
 
 use Actengage\NightWatch\Watcher;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait Watchable {
     
@@ -11,7 +12,7 @@ trait Watchable {
      * 
      * @return string;
      */
-    public function getWatcherClassName()
+    public function getWatcherClassName(): string
     {
         return Watcher::class;
     }
@@ -21,7 +22,7 @@ trait Watchable {
      * 
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
-    public function watchers()
+    public function watchers(): MorphToMany
     {
         return $this->morphToMany(
             $this->getWatcherClassName(), 'watchable', 'nightwatch_watchables'

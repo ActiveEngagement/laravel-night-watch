@@ -4,8 +4,11 @@ namespace Actengage\NightWatch;
 
 use Actengage\NightWatch\Jobs\RunWatcher;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class Watcher extends Model {
 
@@ -116,10 +119,12 @@ class Watcher extends Model {
      * course still be run manually.
      * 
      * This scope is syntactic sugar for `->where('active', true)`.
+     * 
+     * @return void
      */
-    public function scopeActive($query)
+    public function scopeActive($query): void
     {
-        return $query->where('active', true);
+        $query->where('active', true);
     }
 
     /**
@@ -132,10 +137,12 @@ class Watcher extends Model {
      * course still be run manually.
      * 
      * This scope is syntactic sugar for `->where('active', false)`.
+     * 
+     * @return void
      */
-    public function scopeInactive($query)
+    public function scopeInactive($query): void
     {
-        return $query->where('active', false);
+        $query->where('active', false);
     }
 
     /**
@@ -143,7 +150,7 @@ class Watcher extends Model {
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany;
      */
-    public function responses()
+    public function responses(): HasMany
     {
         return $this->hasMany(Response::class)->orderBy('id', 'desc');
     }
@@ -151,9 +158,9 @@ class Watcher extends Model {
     /**
      * The last responses assiociated with this watcher.
      * 
-     * @return \Actengage\NightWatch\Response|null
+     * @return ?\Actengage\NightWatch\Response
      */
-    public function lastResponse()
+    public function lastResponse(): ?Response
     {
         return $this->responses()->first();
     }
@@ -163,7 +170,7 @@ class Watcher extends Model {
      * 
      * @return \Actengage\NightWatch\RequestBuilder
      */
-    public function request()
+    public function request(): RequestBuilder
     {
         return new RequestBuilder($this);
     }
@@ -172,9 +179,9 @@ class Watcher extends Model {
      * Record a database response from a Guzzle response.
      * 
      * @param  \GuzzleHttp\Psr7\Response  $response
-     * @return this
+     * @return \Actengage\NightWatch\Response
      */
-    public function response(\GuzzleHttp\Psr7\Response $response)
+    public function response(\GuzzleHttp\Psr7\Response $response): Response
     {
         $body = json_decode($response->getBody(), true);
 
@@ -189,9 +196,9 @@ class Watcher extends Model {
     /**
      * Run the watcher manually.
      * 
-     * @return this
+     * @return bool
      */
-    public function run()
+    public function run(): bool
     {
         RunWatcher::dispatch($this);
 
@@ -217,13 +224,13 @@ class Watcher extends Model {
      * Schedule the watchers.
      * 
      * @param  \Illuminate\Console\Scheduling\Schedule
-     * @return \Illuminate\Support\Collection
+     * @return void
      */
-    public static function schedule(Schedule $schedule = null)
+    public static function schedule(Schedule $schedule = null): void
     {
         $schedule = $schedule ?: app(Schedule::class);
 
-        return static::active()->each(function($model) use ($schedule) {
+        static::active()->each(function($model) use ($schedule) {
             $event = $schedule->job(new RunWatcher($model));
             
             if(is_array($model->schedule)) {
