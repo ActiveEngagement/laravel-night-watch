@@ -4,8 +4,11 @@ namespace Actengage\NightWatch;
 
 use Actengage\NightWatch\Jobs\RunWatcher;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class Watcher extends Model {
 
@@ -41,7 +44,7 @@ class Watcher extends Model {
      * @var string
      */
     protected $casts = [
-        'request' => 'array',
+        'request' => 'collection',
         'schedule' => 'array'
     ];
 
@@ -55,55 +58,47 @@ class Watcher extends Model {
     ];
 
     /**
-     * Get the request calls attribute.
+     * Gets and sets the `calls` attribute.
      * 
-     * @return array|null
+     * Implements a Laravel custom mutator and accessor for the `calls` attribute, by retrieving and setting the
+     * `'calls'` key on the request attribute.
+     * 
+     * @return Attribute
      */
-    public function getCallsAttribute()
+    protected function calls(): Attribute
     {
-        return Arr::get($this->request, 'calls', []);
+        return $this->collectionAttribute('request', 'calls');
     }
 
     /**
-     * Set the calls attribute.
+     * Gets and sets the `calls` attribute.
      * 
-     * @return void
+     * Implements a Laravel custom mutator and accessor for the `calls` attribute, by retrieving and setting the
+     * `'calls'` key on the request attribute.
+     * 
+     * @return Attribute
      */
-    public function setCallsAttribute(array $value)
+    protected function listen(): Attribute
     {
-        $this->request = array_merge([], $this->request, ['calls' => $value]);
+        return $this->collectionAttribute('request', 'listen');
     }
 
     /**
-     * Get the request listen attribute.
+     * Sets the `url` attribute.
      * 
-     * @return array|null
-     */
-    public function getListenAttribute()
-    {
-        return Arr::get($this->request, 'listen', []);
-    }
-
-    /**
-     * Set the listen attribute.
+     * Implements a Laravel custom mutator for the `url` attribute that saved the value to a `'url'` key on the request
+     * attribute *as well as* the `url` column itself.
      * 
-     * @return void
+     * @return Attribute
      */
-    public function setListenAttribute(array $value)
+    protected function url(): Attribute
     {
-        $this->request = array_merge([], $this->request, ['listen' => $value]);
-    }
-
-    /**
-     * Set the url attribute.
-     * 
-     * @return void
-     */
-    public function setUrlAttribute(string $value = null)
-    {
-        $this->request = array_merge([], $this->request, [
-            'url' => $this->attributes['url'] = $value
-        ]);
+        return Attribute::make(
+            set: fn ($value) => [
+                'url' => $value,
+                'request' => $this->request->put('url', $value)
+            ]
+        );
     }
 
     /**
@@ -116,10 +111,12 @@ class Watcher extends Model {
      * course still be run manually.
      * 
      * This scope is syntactic sugar for `->where('active', true)`.
+     * 
+     * @return void
      */
-    public function scopeActive($query)
+    public function scopeActive($query): void
     {
-        return $query->where('active', true);
+        $query->where('active', true);
     }
 
     /**
@@ -132,10 +129,12 @@ class Watcher extends Model {
      * course still be run manually.
      * 
      * This scope is syntactic sugar for `->where('active', false)`.
+     * 
+     * @return void
      */
-    public function scopeInactive($query)
+    public function scopeInactive($query): void
     {
-        return $query->where('active', false);
+        $query->where('active', false);
     }
 
     /**
@@ -143,7 +142,7 @@ class Watcher extends Model {
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany;
      */
-    public function responses()
+    public function responses(): HasMany
     {
         return $this->hasMany(Response::class)->orderBy('id', 'desc');
     }
@@ -151,9 +150,9 @@ class Watcher extends Model {
     /**
      * The last responses assiociated with this watcher.
      * 
-     * @return \Actengage\NightWatch\Response|null
+     * @return ?\Actengage\NightWatch\Response
      */
-    public function lastResponse()
+    public function lastResponse(): ?Response
     {
         return $this->responses()->first();
     }
@@ -163,7 +162,7 @@ class Watcher extends Model {
      * 
      * @return \Actengage\NightWatch\RequestBuilder
      */
-    public function request()
+    public function request(): RequestBuilder
     {
         return new RequestBuilder($this);
     }
@@ -172,9 +171,9 @@ class Watcher extends Model {
      * Record a database response from a Guzzle response.
      * 
      * @param  \GuzzleHttp\Psr7\Response  $response
-     * @return this
+     * @return \Actengage\NightWatch\Response
      */
-    public function response(\GuzzleHttp\Psr7\Response $response)
+    public function response(\GuzzleHttp\Psr7\Response $response): Response
     {
         $body = json_decode($response->getBody(), true);
 
@@ -189,9 +188,9 @@ class Watcher extends Model {
     /**
      * Run the watcher manually.
      * 
-     * @return this
+     * @return bool
      */
-    public function run()
+    public function run(): bool
     {
         RunWatcher::dispatch($this);
 
@@ -214,16 +213,34 @@ class Watcher extends Model {
     }
 
     /**
+     * Creates a collection attribute.
+     * 
+     * Creates a new Laravel {@see Attribute} that gets and sets the given key on a given collection.
+     * 
+     * @param string $collection the name of the collection on the model to get/set. An attribute with this name will be
+     * queried to access the collection value, and an array with this name will be returned fromn the setter.
+     * @param string $key the key on the collection to get/set.
+     * @return Attribute the instantiated Laravel attribute, which may be returned from a mutator/accessor.
+     */
+    private function collectionAttribute(string $collection, string $key): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->$collection->get($key, collect()),
+            set: fn ($value) => [ $collection => $this->$collection->put($key, $value) ]
+        );
+    }
+
+    /**
      * Schedule the watchers.
      * 
      * @param  \Illuminate\Console\Scheduling\Schedule
-     * @return \Illuminate\Support\Collection
+     * @return void
      */
-    public static function schedule(Schedule $schedule = null)
+    public static function schedule(Schedule $schedule = null): void
     {
         $schedule = $schedule ?: app(Schedule::class);
 
-        return static::active()->each(function($model) use ($schedule) {
+        static::active()->each(function($model) use ($schedule) {
             $event = $schedule->job(new RunWatcher($model));
             
             if(is_array($model->schedule)) {

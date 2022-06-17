@@ -4,6 +4,7 @@ namespace Actengage\NightWatch;
 
 use Actengage\NightWatch\Events\BadResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Response extends Model {
 
@@ -38,7 +39,7 @@ class Response extends Model {
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo;
      */
-    public function watcher()
+    public function watcher(): BelongsTo
     {
         return $this->belongsTo(Watcher::class, 'watcher_id');
     }
@@ -48,7 +49,7 @@ class Response extends Model {
      * 
      * @return void
      */
-    public static function boot()
+    public static function boot(): void
     {
         parent::boot();
 

@@ -12,21 +12,15 @@ class BadResponse {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
-     * The event response.
+     * Create a new BadResponse.
      * 
-     * @return \Actengage\NightWatch\Response
-     */
-    public $response;
-
-    /**
-     * Create a new event instance.
+     * Creates a new {@see BadResponse} event with the given {@see \Actengage\NightWatch\Response} instance.
      *
      * @param  \Actengage\NightWatch\Response  $response
      * @return void
      */
-    public function __construct(Response $response)
+    public function __construct(public Response $response)
     {
-        $this->response = $response;
     }
     
 }

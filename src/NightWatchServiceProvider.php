@@ -9,7 +9,7 @@ class NightWatchServiceProvider extends \Illuminate\Support\ServiceProvider {
      * 
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/nightwatch.php', 'nightwatch');
 
@@ -27,7 +27,7 @@ class NightWatchServiceProvider extends \Illuminate\Support\ServiceProvider {
      * 
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
