@@ -58,55 +58,47 @@ class Watcher extends Model {
     ];
 
     /**
-     * Get the request calls attribute.
+     * Gets and sets the `calls` attribute.
      * 
-     * @return array|null
+     * Implements a Laravel custom mutator and accessor for the `calls` attribute, by retrieving and setting the
+     * `'calls'` key on the request attribute.
+     * 
+     * @return Attribute
      */
-    public function getCallsAttribute()
+    protected function calls(): Attribute
     {
-        return $this->request->get('calls', []);
+        return $this->collectionAttribute('request', 'calls');
     }
 
     /**
-     * Set the calls attribute.
+     * Gets and sets the `calls` attribute.
      * 
-     * @return void
+     * Implements a Laravel custom mutator and accessor for the `calls` attribute, by retrieving and setting the
+     * `'calls'` key on the request attribute.
+     * 
+     * @return Attribute
      */
-    public function setCallsAttribute(array $value)
+    protected function listen(): Attribute
     {
-        $this->request = $this->request->merge(['calls' => $value]);
+        return $this->collectionAttribute('request', 'listen');
     }
 
     /**
-     * Get the request listen attribute.
+     * Sets the `url` attribute.
      * 
-     * @return array|null
-     */
-    public function getListenAttribute()
-    {
-        return $this->request->get('listen', []);
-    }
-
-    /**
-     * Set the listen attribute.
+     * Implements a Laravel custom mutator for the `url` attribute that saved the value to a `'url'` key on the request
+     * attribute *as well as* the `url` column itself.
      * 
-     * @return void
+     * @return Attribute
      */
-    public function setListenAttribute(array $value)
+    protected function url(): Attribute
     {
-        $this->request = $this->request->merge(['listen' => $value]);
-    }
-
-    /**
-     * Set the url attribute.
-     * 
-     * @return void
-     */
-    public function setUrlAttribute(string $value = null)
-    {
-        $this->request = $this->request->merge([
-            'url' => $this->attributes['url'] = $value
-        ]);
+        return Attribute::make(
+            set: fn ($value) => [
+                'url' => $value,
+                'request' => $this->request->put('url', $value)
+            ]
+        );
     }
 
     /**
@@ -218,6 +210,24 @@ class Watcher extends Model {
     public function beforeRun(): bool
     {
         return true;
+    }
+
+    /**
+     * Creates a collection attribute.
+     * 
+     * Creates a new Laravel {@see Attribute} that gets and sets the given key on a given collection.
+     * 
+     * @param string $collection the name of the collection on the model to get/set. An attribute with this name will be
+     * queried to access the collection value, and an array with this name will be returned fromn the setter.
+     * @param string $key the key on the collection to get/set.
+     * @return Attribute the instantiated Laravel attribute, which may be returned from a mutator/accessor.
+     */
+    private function collectionAttribute(string $collection, string $key): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->$collection->get($key, collect()),
+            set: fn ($value) => [ $collection => $this->$collection->put($key, $value) ]
+        );
     }
 
     /**
