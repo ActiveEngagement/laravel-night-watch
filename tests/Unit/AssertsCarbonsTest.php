@@ -54,4 +54,43 @@ class AssertsCarbonsTest extends TestCase
 
         $this->assertCarbonsEqualWithDelta($exp, $act, $int);
     }
+
+    public function test__assertIntervalsEqual__withEqualIntervals__passes()
+    {
+        $exp = CarbonInterval::milliseconds(2000);
+        $act = CarbonInterval::seconds(2);
+
+        $this->assertIntervalsEqual($exp, $act);
+    }
+
+    public function test__assertIntervalsEqual__withInequalIntervals__fails()
+    {
+        $exp = CarbonInterval::milliseconds(2001);
+        $act = CarbonInterval::seconds(2);
+
+        $this->assertThrows(function() use ($exp, $act) {
+            $this->assertIntervalsEqual($exp, $act, "They've got to be equal!");
+        }, AssertionFailedError::class, "They've got to be equal!");
+    }
+
+    public function test__assertIntervalsEqualWithDelta__withInBoundsIntervals__passes()
+    {
+        $exp = CarbonInterval::milliseconds(2001);
+        $act = CarbonInterval::seconds(2);
+        $d = CarbonInterval::milliseconds(1);
+
+        $this->assertIntervalsEqualWithDelta($exp, $act, $d);
+    }
+
+    public function test__assertIntervalsEqualWithDelta__withOutOfBoundsIntervals__fails()
+    {
+        $exp = CarbonInterval::milliseconds(2002);
+        $act = CarbonInterval::seconds(2);
+        $d = CarbonInterval::milliseconds(1);
+
+        $this->assertThrows(function() use ($exp, $act, $d) {
+            $this->assertIntervalsEqualWithDelta($exp, $act, $d, "They've got to be somewhat equal!");
+        }, AssertionFailedError::class, "They've got to be somewhat equal!");
+    }
+
 }

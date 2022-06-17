@@ -24,6 +24,16 @@ class RequestBuilder implements Arrayable {
     protected ?Client $client = null;
 
     /**
+     * The current Guzzle confinguration.
+     * 
+     * This property is necessary because the configuration of a Guzzle client is inaccessible and thus needs to be
+     * stored elsewhere.
+     * 
+     * @var array
+     */
+    protected array $clientConfig = [];
+
+    /**
      * The listen attribute.
      * 
      * @var ?array
@@ -85,15 +95,12 @@ class RequestBuilder implements Arrayable {
      */
     public function client(?array $config = null): Client
     {
-        $mergedConfig = array_merge((
-            $this->client ? $this->client->getConfig() : []
-        ), (
-            is_array($config) ? $config : []
-        ));
-
-        if(!$this->client || $config) {
-            $this->client = new Client($mergedConfig);
+        if ($this->client && !$config) {
+            return $this->client;
         }
+
+        $this->clientConfig = array_merge($this->clientConfig, $config ?? []);
+        $this->client = new Client($this->clientConfig);
 
         return $this->client;
     }
