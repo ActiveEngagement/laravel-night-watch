@@ -107,4 +107,49 @@ class RequestBuilderTest extends TestCase {
             [500, false]
         ];
     }
+
+    public function test__client__noExistingClientGivenNoConfig__returnsNewDefaultClient()
+    {
+        $builder = new RequestBuilder(factory(Watcher::class)->create());
+        $client = $builder->client();
+
+        $this->assertInstanceOf(\GuzzleHttp\Client::class, $client);
+    }
+
+    public function test__client__existingClientGivenNoConfig__returnsExisting()
+    {
+        $builder = new RequestBuilder(factory(Watcher::class)->create());
+        $existing = $builder->client(['delay' => 2500]);
+        $client = $builder->client();
+
+        $this->assertSame($existing, $client);
+    }
+
+    public function test__client__existingClientGivenNewConfig__returnsNewClient()
+    {
+        $builder = new RequestBuilder(factory(Watcher::class)->create());
+        $existing = $builder->client();
+        $client = $builder->client(['max' => 5]);
+
+        $this->assertNotSame($existing, $client);
+    }
+
+    public function test__client__existingClientGivenNewConfig__returnsClientWithMergedConfig()
+    {
+        $handler = MockHandler::createWithMiddleware([
+            new Response(200, [], json_encode([
+                'success' => 200
+            ]))
+        ]);
+
+        $builder = new RequestBuilder(factory(Watcher::class)->create());
+        $existing = $builder->client(['handler' => $handler]);
+        $client = $builder->client(['delay' => 1000]);
+
+        $before = now();
+        $client->get('https://example.com');
+        $after = now();
+
+        $this->assertIntervalsEqualWithDelta(CarbonInterval::second(), $after->diffAsCarbonInterval($before), CarbonInterval::milliseconds(10));
+    }
 }
