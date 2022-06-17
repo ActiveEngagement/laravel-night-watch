@@ -45,7 +45,6 @@ class RequestBuilder implements Arrayable {
      */
     public function __construct(protected Watcher $watcher)
     {
-        $this->watcher = $watcher;
         $this->calls = $watcher->calls;
         $this->listen = $watcher->listen;
         $this->url = $watcher->url;
